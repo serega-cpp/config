@@ -24,8 +24,8 @@ func New[ConfigType any](initial *ConfigType) *Config[ConfigType] {
 	return &Config[ConfigType]{}
 }
 
-func (c *Config[ConfigType]) UsageFlags(command string, out io.Writer) {
-	fs := flag.NewFlagSet(command, flag.ContinueOnError)
+func (c *Config[ConfigType]) UsageFlags(out io.Writer) {
+	fs := flag.NewFlagSet("command line arguments", flag.ContinueOnError)
 	if buildFlagsForStruct(&c.cfg, fs) == nil {
 		fs.SetOutput(out)
 		fs.Usage()
@@ -33,9 +33,12 @@ func (c *Config[ConfigType]) UsageFlags(command string, out io.Writer) {
 }
 
 func (c *Config[ConfigType]) UsageEnvs(prefix string, out io.Writer) {
+	if out == nil {
+		out = os.Stderr
+	}
 	fs := flag.NewFlagSet(prefix, flag.ContinueOnError)
 	if buildFlagsForStruct(&c.cfg, fs) == nil {
-		fmt.Fprintf(out, "Usage of %s:\n", prefix)
+		fmt.Fprintln(out, "Usage of environment variables:")
 		fs.VisitAll(func(f *flag.Flag) {
 			name := buildEnvName(prefix, f.Name)
 			fmt.Fprintf(out, "  %s\t\t%s\n", name, f.Usage)

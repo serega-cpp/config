@@ -115,7 +115,7 @@ var externalExpected = External{
 	Duration: 12 * time.Second,
 }
 
-const usageFlagsExpected = "Usage of test:\n" +
+const usageFlagsExpected = "Usage of command line arguments:\n" +
 	"  -external-duration duration\n" +
 	"    \t::duration field\n" +
 	"  -id string\n" +
@@ -135,7 +135,7 @@ const usageFlagsExpected = "Usage of test:\n" +
 	"  -simple-uint64 uint\n" +
 	"    \t::uint64 field\n"
 
-const usageEnvsExpected = "Usage of test:\n" +
+const usageEnvsExpected = "Usage of environment variables:\n" +
 	"  TEST_EXTERNAL_DURATION\t\t::duration field\n" +
 	"  TEST_ID\t\tIdentificator\n" +
 	"  TEST_SIMPLE_BOOL\t\t::bool field\n" +
@@ -152,17 +152,17 @@ const usageEnvsExpected = "Usage of test:\n" +
 func TestConfigUsageFlags(t *testing.T) {
 	t.Run("Usage flags (classic)", func(t *testing.T) {
 		var buf bytes.Buffer
-		config.New[MyConfig](nil).UsageFlags("test", &buf)
+		config.New[MyConfig](nil).UsageFlags(&buf)
 		require.Equal(t, usageFlagsExpected, buf.String())
 	})
 	t.Run("Usage flags (pointers)", func(t *testing.T) {
 		var buf bytes.Buffer
-		config.New[MyConfigPtr](nil).UsageFlags("test", &buf)
+		config.New[MyConfigPtr](nil).UsageFlags(&buf)
 		require.Equal(t, usageFlagsExpected, buf.String())
 	})
 	t.Run("Usage flags (embedded)", func(t *testing.T) {
 		var buf bytes.Buffer
-		config.New[MyConfigEmbed](nil).UsageFlags("test", &buf)
+		config.New[MyConfigEmbed](nil).UsageFlags(&buf)
 		require.Equal(t, usageFlagsExpected, buf.String())
 	})
 }
@@ -266,7 +266,7 @@ func TestConfigErrors(t *testing.T) {
 		require.Error(t, err2)
 
 		var buf bytes.Buffer
-		config.New[BadConfig](nil).UsageFlags("test", &buf)
+		config.New[BadConfig](nil).UsageFlags(&buf)
 		require.Equal(t, "", buf.String())
 	})
 	t.Run("Test withFile", func(t *testing.T) {

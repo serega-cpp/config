@@ -98,7 +98,7 @@ var customExpected = Custom{
 	Link:      initUrl("https://google.com/search?q=golang"),
 }
 
-const usageFlagsCustomExpected = "Usage of test:\n" +
+const usageFlagsCustomExpected = "Usage of command line arguments:\n" +
 	"  -custom-link value\n" +
 	"    \t::Link field\n" +
 	"  -custom-longtime value\n" +
@@ -110,7 +110,7 @@ const usageFlagsCustomExpected = "Usage of test:\n" +
 	"  -id string\n" +
 	"    \tIdentificator\n"
 
-const usageEnvsCustomExpected = "Usage of test:\n" +
+const usageEnvsCustomExpected = "Usage of environment variables:\n" +
 	"  TEST_CUSTOM_LINK\t\t::Link field\n" +
 	"  TEST_CUSTOM_LONGTIME\t\t::time19 field\n" +
 	"  TEST_CUSTOM_SHORTTIME\t\t::time10 field\n" +
@@ -123,7 +123,7 @@ const usageEnvsCustomExpected = "Usage of test:\n" +
 func TestConfigUsageCustomFlags(t *testing.T) {
 	t.Run("Usage custom flags", func(t *testing.T) {
 		var buf bytes.Buffer
-		config.New[CustomConfig](nil).UsageFlags("test", &buf)
+		config.New[CustomConfig](nil).UsageFlags(&buf)
 		require.Equal(t, usageFlagsCustomExpected, buf.String())
 	})
 }
