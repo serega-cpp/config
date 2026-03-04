@@ -1,5 +1,6 @@
-Config
-======
+[![codecov](https://codecov.io/gh/serega-cpp/config/branch/master/graph/badge.svg)](https://codecov.io/gh/serega-cpp/config)
+
+# Config
 
 This package is designed to unify work with service configuration. It provides a convenient way to load configuration parameters into a data structure. When loading, they are converted to the appropriate Go data types. Loading from multiple sources is supported, and source chains can be built, where parameters are loaded sequentially from several sources, overwriting previous values. The package relies on the standard `package flag`, so there may be limitations and peculiarities associated with it.
 
@@ -78,7 +79,7 @@ type RecurrentConfig struct {
 
 ### Samples
 
-Sample #1: Gets some defaults, then loads Yaml file, then parses command line and environment variables.
+**Sample #1:** Gets some defaults, then loads Yaml file, then parses command line and environment variables
 
 ```
 package main
@@ -120,7 +121,7 @@ func main() {
 }
 ```
 
-Sample #2: Loads Ini-file content.
+**Sample #2:** Loads Ini-file content.
 
 ```
 cfg, err := config.New[Config]().WithFile(fname,
@@ -136,7 +137,7 @@ cfg, err := config.New[Config]().WithFile(fname,
 ).AsStruct()
 ```
 
-Sample #3: Usage output.
+**Sample #3:** Usage output.
 
 ```
 config.New[Config](nil).UsageFlags(nil)
