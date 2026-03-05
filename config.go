@@ -66,7 +66,9 @@ func (c *Config[ConfigType]) WithFlags(args []string, out io.Writer) *Config[Con
 	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	if c.err = buildFlagsForStruct(&c.cfg, fs); c.err == nil {
 		fs.SetOutput(out)
-		fs.Parse(args)
+		if err := fs.Parse(args); err != nil {
+			c.err = fmt.Errorf("failed to parse arguments: %v", err)
+		}
 	}
 	return c
 }
@@ -80,7 +82,9 @@ func (c *Config[ConfigType]) WithEnvs(prefix string) *Config[ConfigType] {
 		fs.VisitAll(func(f *flag.Flag) {
 			name := buildEnvName(prefix, f.Name)
 			if value := os.Getenv(name); value != "" {
-				f.Value.Set(value)
+				if err := f.Value.Set(value); err != nil {
+					c.err = fmt.Errorf("failed to parse %s (%s): %v", name, value, err)
+				}
 			}
 		})
 	}

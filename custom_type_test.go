@@ -87,6 +87,14 @@ var envsCustom = []string{
 	"TEST_CUSTOM_LINK=https://google.com/search?q=golang",
 }
 
+var badArgsCustom = []string{
+	"--custom-stdtime=2023-02-16T12:00",
+}
+
+var badEnvsCustom = []string{
+	"TEST_CUSTOM_STDTIME=2023-02-16T12:00",
+}
+
 ///////////////////////////////////////////////////////////
 // Config expected
 
@@ -152,6 +160,21 @@ func TestConfigCustomEnvs(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, idCustomExpected, cfg.Id)
 		require.Equal(t, customExpected, cfg.Custom)
+	})
+}
+
+func TestConfigBadCustomFlags(t *testing.T) {
+	t.Run("Bad custom flags", func(t *testing.T) {
+		_, err := config.New[CustomConfig](nil).WithFlags(badArgsCustom, nil).AsStruct()
+		require.Error(t, err)
+	})
+}
+
+func TestConfigBadCustomEnvs(t *testing.T) {
+	createEnvironment(t, badEnvsCustom)
+	t.Run("Bad custom envs", func(t *testing.T) {
+		_, err := config.New[CustomConfig](nil).WithEnvs("test").AsStruct()
+		require.Error(t, err)
 	})
 }
 
