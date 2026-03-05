@@ -1,3 +1,6 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/serega-cpp/config.svg)](https://pkg.go.dev/github.com/serega-cpp/config)
+[![Go Report Card](https://goreportcard.com/badge/github.com/serega-cpp/config)](https://goreportcard.com/report/github.com/serega-cpp/config)
+[![Go Build](https://github.com/serega-cpp/config/actions/workflows/build.yaml/badge.svg)](https://github.com/serega-cpp/config/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/gh/serega-cpp/config/branch/master/graph/badge.svg)](https://codecov.io/gh/serega-cpp/config)
 
 # Config
