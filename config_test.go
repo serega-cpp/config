@@ -271,13 +271,13 @@ func TestConfigErrors(t *testing.T) {
 	})
 	t.Run("Test withFile", func(t *testing.T) {
 		_, err := config.New[MyConfig](nil).WithFile("nonexist",
-			func(content []byte) (MyConfig, error) {
-				return MyConfig{}, nil
+			func(cfg *MyConfig, content []byte) error {
+				return nil
 			},
 		).WithFile("nonexist",
-			func(content []byte) (MyConfig, error) {
+			func(cfg *MyConfig, content []byte) error {
 				require.Fail(t, "reads file after failure")
-				return MyConfig{}, nil
+				return nil
 			},
 		).WithFlags(argsSample, nil).WithEnvs("test").AsStruct()
 		require.Error(t, err)

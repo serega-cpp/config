@@ -95,10 +95,8 @@ func TestConfigYaml(t *testing.T) {
 	fname := createTmpFile(t, "test.yaml", YamlContent)
 	t.Run("YAML", func(t *testing.T) {
 		cfg, err := config.New[YamlConfig](nil).WithFile(fname,
-			func(content []byte) (YamlConfig, error) {
-				var cfg YamlConfig
-				err := yaml.Unmarshal(content, &cfg)
-				return cfg, err
+			func(cfg *YamlConfig, content []byte) error {
+				return yaml.Unmarshal(content, cfg)
 			},
 		).AsStruct()
 		require.NoError(t, err)

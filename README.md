@@ -7,7 +7,7 @@
 
 This package is designed to unify work with service configuration. It provides a convenient way to load configuration parameters into a data structure. When loading, they are converted to the appropriate Go data types. Loading from multiple sources is supported, and source chains can be built, where parameters are loaded sequentially from several sources, overwriting previous values. The package relies on the standard `package flag`, so there may be limitations and peculiarities associated with it.
 
-### Sources
+### Parameter sources
 
 The following sources are supported:
 - files (Yaml, Ini, Toml, etc.)
@@ -16,9 +16,9 @@ The following sources are supported:
 
 Loading from a file is not directly the responsibility of this package; it merely provides the ability to implement a callback function in client code. Loading from command line parameters and environment variables, as well as source chaining, is implemented in the package.
 
-### Supported types
+### Supported parameter types
 
-The list of Go types supported by file parsers depends on the specific parser implementation. The default set of types available for loading from command-line parameters and environment variables includes (adding custom types by initializing them from a string is also supported):
+The list of Go types supported by file parsers depends on the specific parser implementation. The default set of types available for loading from command-line parameters and environment variables includes:
 - string
 - int, int64
 - uint, uint64
@@ -26,9 +26,17 @@ The list of Go types supported by file parsers depends on the specific parser im
 - float64
 - time.Duration
 
+It is also supported to add custom types by initializing them with a string.
+
+### Custom types
+
+To use a custom type, you must implement the flag.Value interface for that type. This is sufficient for command line parsers and environment variables. See the example in the [custom_type_test](custom_type_test.go) test or the theory here: https://pkg.go.dev/flag#example-Value.
+
+To use a custom type with file parsers, follow the appropriate instructions for the chosen parser. See the example for a YAML file in the [config_yaml_test](config_yaml_test.go) test.
+
 ### Parameter names
 
-Parameter names are automatically generated from the structure field names. No tags for name customization are supported (intentionally). For command-line parameters, field names are first converted to lowercase and separated by dashes. For environment variables, they are capitalized and separated by underscores. E.g.:
+Parameter names are automatically generated based on the structure field names. This is the package's key feature. For command line parameters, field names are first converted to lowercase and separated by hyphens. For environment variables, they are capitalized and separated by underscores. E.g.:
 
 ```
 type Host struct {
@@ -46,7 +54,7 @@ type Config struct {
 }
 ```
 
-produces the following commandline parameter names:
+produces the following command line parameter names:
 
 ```
 --host-addr
@@ -62,7 +70,7 @@ PREFIX_HOST_PORT
 PREFIX_MEASUREMENT_DURATION
 ```
 
-For file sources, parameter names are determined by the file parser implementation. It typically supports custom tags, but I'd recommend leaving the default rules.
+In file parsers, parameter names are defined by the parser implementation itself. Additionally, they typically support tags for customizing names. This package does not support a tag for customizing names. It only supports the `usage` tag for describing values.
 
 ### Limitations
 
@@ -75,9 +83,58 @@ type BadConfig struct {
 
 2. Recurrent types not supported, e.g.:
 ```
-type RecurrentConfig struct {
-	Self *RecurrentConfig
+type BadConfig struct {
+	Self *BadConfig
 }
+```
+
+### Usage:
+
+1. Create a configuration file, specifying initial values ​​if necessary
+```
+// if nil is provided as an initial struct, no defaults will be used
+cfgObj := config.New(&Config{
+	// ...
+})
+```
+
+2. Load values ​​from file [optional]
+```
+cfgObj.WithFile(fileName,
+	func(cfg *Config, content []byte) error {
+		// here you should fill the cfg using the content value
+	},
+)
+```
+
+3. Load values from command line [optional]
+```
+// the 2-nd argument is an output stream for printing flag
+// usage errors (if nil is provided, the stderr will be used)
+cfgObj.WithFlags(os.Args[1:], nil)
+```
+
+4. Load values from environment variables [optional]
+```
+// The "prefix" is a prefix for all variable names,
+// to avoid possible conflicts in a global enviroment space
+objCfg.WithEnvs("prefix")
+```
+
+5. Prepare the configuration structure for use (and error if any)
+```
+cfg, err := objCfg.AsStruct()
+```
+
+6. You can also print out the usage information
+```
+// This prints the usage info for command line arguments, the argument
+// is an output stream (if nil is provided, the stderr will be used)
+cfgObj.UsageFlags(nil)
+
+// This prints the usage info for environment variables, the 2-nd argument
+// is an output stream (if nil is provided, the stderr will be used)
+cfgObj.UsageEnvs("prefix", nil)
 ```
 
 ### Samples
@@ -93,12 +150,6 @@ import (
 )
 
 func main() {
-	// This prints the autogenerated usage info (for commandline arguments)
-	config.New[Config](nil).UsageFlags(nil)
-
-	// This prints the autogenerated usage info (for env vars arguments)
-	config.New[Config](nil).UsageEnvs("prefix", nil)
-
 	// This loads parameters in the order overwriting existing values:
 	// defaults -> yaml file -> command line -> env vars
 	// (calls may be freely reordered)
@@ -108,12 +159,10 @@ func main() {
 			Addr: "localhost",
 		},
 	}).WithFile("config.yaml",
-		func(content []byte) (Config, error) {
-			var cfg Config
-			err := yaml.Unmarshal(content, &cfg)
-			return cfg, err
+		func(cfg *Config, content []byte) error {
+			return yaml.Unmarshal(content, cfg)
 		},
-	).WithFlags(os.Args, nil).WithEnvs("prefix").AsStruct()
+	).WithFlags(os.Args[1:], nil).WithEnvs("prefix").AsStruct()
 
 	if err != nil {
 		fmt.Println(err)
@@ -124,18 +173,16 @@ func main() {
 }
 ```
 
-**Sample #2:** Loads Ini-file content.
+**Sample #2:** Loads Ini-file content (using gopkg.in/ini.v1).
 
 ```
-cfg, err := config.New[Config]().WithFile(fname,
-	func(content []byte) (Config, error) {
-		var cfg Config
+cfg, err := config.New[Config](nil).WithFile(fname,
+	func(cfg *Config, content []byte) error {
 		cnt, err := ini.Load(content)
 		if err != nil {
-			return cfg, err
+			return err
 		}
-		err = cnt.MapTo(&cfg)
-		return cfg, err
+		return cnt.MapTo(cfg)
 	},
 ).AsStruct()
 ```
@@ -172,6 +219,23 @@ Usage of environment variables:
   TEST_HOST_PORT		Service port listen on
   TEST_MEASUREMENT_DURATION		Duration of experiment
 ```
+
+**Sample #4:** Read config file name from command line.
+
+Sometimes it's convenient to read the configuration file name from the command line. However, using such an option by the application will conflict with the main configuration loaded by the package. There is a solution: use the "--" separator which signals the end of options and disables further option processing (like that: `./app --config=sample2.yaml -- --host-addr=127.0.0.1 --host-port=80 ...`). The remaining options for the main configuration are passed explicitly to the package. 
+
+```
+fname := flag.String("config", "config.yaml", "Configuration file")
+flag.Parse()
+
+cfg, err := config.New(nil).WithFile(*fname,
+	func(cfg *Config, content []byte) error {
+		return yaml.Unmarshal(content, cfg)
+	},
+).WithFlags(flag.Args(), nil).AsStruct()
+```
+
+Examples can also be found in the test file [config_test](config_test.go).
 
 ### Installation
 

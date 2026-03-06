@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+const SourceCommandLine = "command line arguments"
+const SourceEnvVars = "environment variables"
+
 type Config[ConfigType any] struct {
 	cfg ConfigType
 	err error
@@ -25,7 +28,7 @@ func New[ConfigType any](initial *ConfigType) *Config[ConfigType] {
 }
 
 func (c *Config[ConfigType]) UsageFlags(out io.Writer) {
-	fs := flag.NewFlagSet("command line arguments", flag.ContinueOnError)
+	fs := flag.NewFlagSet(SourceCommandLine, flag.ContinueOnError)
 	if buildFlagsForStruct(&c.cfg, fs) == nil {
 		fs.SetOutput(out)
 		fs.Usage()
@@ -38,7 +41,7 @@ func (c *Config[ConfigType]) UsageEnvs(prefix string, out io.Writer) {
 	}
 	fs := flag.NewFlagSet(prefix, flag.ContinueOnError)
 	if buildFlagsForStruct(&c.cfg, fs) == nil {
-		fmt.Fprintln(out, "Usage of environment variables:")
+		fmt.Fprintf(out, "Usage of %s:\n", SourceEnvVars)
 		fs.VisitAll(func(f *flag.Flag) {
 			name := buildEnvName(prefix, f.Name)
 			fmt.Fprintf(out, "  %s\t\t%s\n", name, f.Usage)
@@ -46,7 +49,10 @@ func (c *Config[ConfigType]) UsageEnvs(prefix string, out io.Writer) {
 	}
 }
 
-func (c *Config[ConfigType]) WithFile(file string, parser func(content []byte) (ConfigType, error)) *Config[ConfigType] {
+func (c *Config[ConfigType]) WithFile(
+	file string,
+	parser func(cfg *ConfigType, content []byte) error,
+) *Config[ConfigType] {
 	if c.err != nil {
 		return c
 	}
@@ -55,7 +61,7 @@ func (c *Config[ConfigType]) WithFile(file string, parser func(content []byte) (
 		c.err = err
 		return c
 	}
-	c.cfg, c.err = parser(content)
+	c.err = parser(&c.cfg, content)
 	return c
 }
 
@@ -63,7 +69,7 @@ func (c *Config[ConfigType]) WithFlags(args []string, out io.Writer) *Config[Con
 	if c.err != nil || len(args) == 0 {
 		return c
 	}
-	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)
+	fs := flag.NewFlagSet(SourceCommandLine, flag.ContinueOnError)
 	if c.err = buildFlagsForStruct(&c.cfg, fs); c.err == nil {
 		fs.SetOutput(out)
 		if err := fs.Parse(args); err != nil {
@@ -77,7 +83,7 @@ func (c *Config[ConfigType]) WithEnvs(prefix string) *Config[ConfigType] {
 	if c.err != nil {
 		return c
 	}
-	fs := flag.NewFlagSet(prefix, flag.ContinueOnError)
+	fs := flag.NewFlagSet(SourceEnvVars, flag.ContinueOnError)
 	if c.err = buildFlagsForStruct(&c.cfg, fs); c.err == nil {
 		fs.VisitAll(func(f *flag.Flag) {
 			name := buildEnvName(prefix, f.Name)
