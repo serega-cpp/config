@@ -30,9 +30,9 @@ It is also supported to add custom types by initializing them with a string.
 
 ### Custom types
 
-To use a custom type, you must implement the flag.Value interface for that type. This is sufficient for command line parsers and environment variables. See the example in the [custom_type_test](custom_type_test.go) test or the theory here: https://pkg.go.dev/flag#example-Value.
+To use a custom type, you must implement the flag.Value interface for that type. This is sufficient for command line parsers and environment variables. See the example in the [custom_type_test.go](custom_type_test.go) or the theory https://pkg.go.dev/flag#example-Value.
 
-To use a custom type with file parsers, follow the appropriate instructions for the chosen parser. See the example for a YAML file in the [config_yaml_test](config_yaml_test.go) test.
+To use a custom type with file parsers, follow the appropriate instructions for the chosen parser. See the example for a YAML file in the [config_yaml_test.go](config_yaml_test.go).
 
 ### Parameter names
 
@@ -222,7 +222,9 @@ Usage of environment variables:
 
 **Sample #4:** Read config file name from command line.
 
-Sometimes it's convenient to read the configuration file name from the command line. However, using such an option by the application will conflict with the main configuration loaded by the package. There is a solution: use the "--" separator which signals the end of options and disables further option processing (like that: `./app --config=sample2.yaml -- --host-addr=127.0.0.1 --host-port=80 ...`). The remaining options for the main configuration are passed explicitly to the package. 
+Sometimes it's convenient to read the configuration file name from the command line. However, using such an option by the application will conflict with the main configuration loaded by the package. There is a solution: use the "--" separator which signals the end of options and disables further option processing. The remaining options for the main configuration are passed explicitly to the package.
+
+So, command line: `./app --config=sample.yaml -- --host-addr=127.0.0.1 --host-port=80 ...`
 
 ```
 fname := flag.String("config", "config.yaml", "Configuration file")
@@ -235,7 +237,7 @@ cfg, err := config.New(nil).WithFile(*fname,
 ).WithFlags(flag.Args(), nil).AsStruct()
 ```
 
-Examples can also be found in the test file [config_test](config_test.go).
+Examples can also be found in [config_test.go](config_test.go).
 
 ### Installation
 
