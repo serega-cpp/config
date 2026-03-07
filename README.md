@@ -215,9 +215,12 @@ prints:
 
 ```
 Usage of environment variables:
-  TEST_HOST_ADDR		Service IP listen on
-  TEST_HOST_PORT		Service port listen on
-  TEST_MEASUREMENT_DURATION		Duration of experiment
+   TEST_HOST_ADDR string
+    	Service IP listen on
+   TEST_HOST_PORT int
+    	Service port listen on
+   TEST_MEASUREMENT_DURATION duration
+    	Duration of experiment
 ```
 
 **Sample #4:** Read config file name from command line.
