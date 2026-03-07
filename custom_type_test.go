@@ -119,11 +119,16 @@ const usageFlagsCustomExpected = "Usage of command line arguments:\n" +
 	"    \tIdentificator\n"
 
 const usageEnvsCustomExpected = "Usage of environment variables:\n" +
-	"  TEST_CUSTOM_LINK\t\t::Link field\n" +
-	"  TEST_CUSTOM_LONGTIME\t\t::time19 field\n" +
-	"  TEST_CUSTOM_SHORTTIME\t\t::time10 field\n" +
-	"  TEST_CUSTOM_STDTIME\t\t::time20 field\n" +
-	"  TEST_ID\t\tIdentificator\n"
+	"   TEST_CUSTOM_LINK value\n" +
+	"    \t::Link field\n" +
+	"   TEST_CUSTOM_LONGTIME value\n" +
+	"    \t::time19 field\n" +
+	"   TEST_CUSTOM_SHORTTIME value\n" +
+	"    \t::time10 field\n" +
+	"   TEST_CUSTOM_STDTIME value\n" +
+	"    \t::time20 field\n" +
+	"   TEST_ID string\n" +
+	"    \tIdentificator\n"
 
 /////////////////////////////////////////////////////////
 // Tests implementations

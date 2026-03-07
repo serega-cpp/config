@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -27,26 +28,28 @@ func New[ConfigType any](initial *ConfigType) *Config[ConfigType] {
 	return &Config[ConfigType]{}
 }
 
-func (c *Config[ConfigType]) UsageFlags(out io.Writer) {
+func (c *Config[ConfigType]) UsageFlags(out io.Writer) error {
 	fs := flag.NewFlagSet(SourceCommandLine, flag.ContinueOnError)
-	if buildFlagsForStruct(&c.cfg, fs) == nil {
-		fs.SetOutput(out)
-		fs.Usage()
+	if err := buildFlagsForStruct(&c.cfg, fs); err != nil {
+		return err
 	}
+	fs.SetOutput(out)
+	fs.Usage()
+	return nil
 }
 
-func (c *Config[ConfigType]) UsageEnvs(prefix string, out io.Writer) {
-	if out == nil {
-		out = os.Stderr
+func (c *Config[ConfigType]) UsageEnvs(prefix string, out io.Writer) error {
+	fs := flag.NewFlagSet(SourceEnvVars, flag.ContinueOnError)
+	if err := buildFlagsForStruct(&c.cfg, fs); err != nil {
+		return err
 	}
-	fs := flag.NewFlagSet(prefix, flag.ContinueOnError)
-	if buildFlagsForStruct(&c.cfg, fs) == nil {
-		fmt.Fprintf(out, "Usage of %s:\n", SourceEnvVars)
-		fs.VisitAll(func(f *flag.Flag) {
-			name := buildEnvName(prefix, f.Name)
-			fmt.Fprintf(out, "  %s\t\t%s\n", name, f.Usage)
-		})
-	}
+	fs.VisitAll(func(f *flag.Flag) {
+		f.Name = buildEnvName(prefix, f.Name)
+	})
+	// custom writer cleans the dash heading the argument name
+	fs.SetOutput(newPrefixCleanerWriter(out, []byte{' ', ' ', '-'}))
+	fs.Usage()
+	return nil
 }
 
 func (c *Config[ConfigType]) WithFile(
@@ -70,11 +73,12 @@ func (c *Config[ConfigType]) WithFlags(args []string, out io.Writer) *Config[Con
 		return c
 	}
 	fs := flag.NewFlagSet(SourceCommandLine, flag.ContinueOnError)
-	if c.err = buildFlagsForStruct(&c.cfg, fs); c.err == nil {
-		fs.SetOutput(out)
-		if err := fs.Parse(args); err != nil {
-			c.err = fmt.Errorf("failed to parse arguments: %v", err)
-		}
+	if c.err = buildFlagsForStruct(&c.cfg, fs); c.err != nil {
+		return c
+	}
+	fs.SetOutput(out)
+	if err := fs.Parse(args); err != nil {
+		c.err = fmt.Errorf("failed to parse arguments: %v", err)
 	}
 	return c
 }
@@ -84,16 +88,17 @@ func (c *Config[ConfigType]) WithEnvs(prefix string) *Config[ConfigType] {
 		return c
 	}
 	fs := flag.NewFlagSet(SourceEnvVars, flag.ContinueOnError)
-	if c.err = buildFlagsForStruct(&c.cfg, fs); c.err == nil {
-		fs.VisitAll(func(f *flag.Flag) {
-			name := buildEnvName(prefix, f.Name)
-			if value := os.Getenv(name); value != "" {
-				if err := f.Value.Set(value); err != nil {
-					c.err = fmt.Errorf("failed to parse %s (%s): %v", name, value, err)
-				}
-			}
-		})
+	if c.err = buildFlagsForStruct(&c.cfg, fs); c.err != nil {
+		return c
 	}
+	fs.VisitAll(func(f *flag.Flag) {
+		name := buildEnvName(prefix, f.Name)
+		if value := os.Getenv(name); value != "" {
+			if err := f.Value.Set(value); err != nil {
+				c.err = fmt.Errorf("failed to parse %s (%s): %v", name, value, err)
+			}
+		}
+	})
 	return c
 }
 
@@ -113,7 +118,7 @@ func buildFlagsForStruct(s any, fs *flag.FlagSet) error {
 
 func enumerateValue(v reflect.Value, prefix string, typesStack map[reflect.Type]bool, fs *flag.FlagSet) error {
 	if !v.IsValid() {
-		return fmt.Errorf("enum: value is not valid")
+		return fmt.Errorf("enum: %s, value is not valid", prefix)
 	}
 
 	if v.Kind() == reflect.Ptr {
@@ -123,7 +128,7 @@ func enumerateValue(v reflect.Value, prefix string, typesStack map[reflect.Type]
 
 		t := v.Type()
 		if typesStack[t] {
-			return fmt.Errorf("enum: types recursion is not allowed")
+			return fmt.Errorf("enum: %s, types recursion is not allowed", prefix)
 		}
 		typesStack[t] = true
 		defer delete(typesStack, t)
@@ -132,7 +137,7 @@ func enumerateValue(v reflect.Value, prefix string, typesStack map[reflect.Type]
 	}
 
 	if v.Kind() != reflect.Struct {
-		return fmt.Errorf("expected a struct, got %v", v.Kind())
+		return fmt.Errorf("enum: %s, expected a struct, got %v", prefix, v.Kind())
 	}
 
 	for i := 0; i < v.NumField(); i++ {
@@ -183,7 +188,7 @@ func enumerateValue(v reflect.Value, prefix string, typesStack map[reflect.Type]
 		case reflect.Float64:
 			ptr := field.Addr().Interface().(*float64)
 			fs.Float64Var(ptr, name, *ptr, tagUsage)
-		case reflect.Struct, reflect.Ptr:
+		case reflect.Struct, reflect.Ptr, reflect.Interface:
 			if err := enumerateValue(field, name, typesStack, fs); err != nil {
 				return err
 			}
@@ -203,4 +208,25 @@ func buildName(prefix string, name string) string {
 func buildEnvName(prefix string, name string) string {
 	s := prefix + "_" + strings.ReplaceAll(name, "-", "_")
 	return strings.ToUpper(s)
+}
+
+type prefixCleanerWriter struct {
+	w      io.Writer
+	prefix []byte
+}
+
+func newPrefixCleanerWriter(w io.Writer, prefix []byte) *prefixCleanerWriter {
+	return &prefixCleanerWriter{
+		w:      w,
+		prefix: prefix,
+	}
+}
+
+func (w *prefixCleanerWriter) Write(p []byte) (n int, err error) {
+	if bytes.HasPrefix(p, w.prefix) {
+		for i := range w.prefix {
+			p[i] = ' '
+		}
+	}
+	return w.w.Write(p)
 }

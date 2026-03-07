@@ -27,6 +27,7 @@ type Simple struct {
 	Float64 float64 `usage:"::float64 field"`
 	Int64   int64   `usage:"::int64 field"`
 	Uint64  uint64  `usage:"::uint64 field"`
+	ignored string  `usage:"unexported field"`
 }
 type External struct {
 	Duration time.Duration `usage:"::duration field"`
@@ -57,6 +58,7 @@ type MyConfigEmbed struct {
 		Float64 float64 `usage:"::float64 field"`
 		Int64   int64   `usage:"::int64 field"`
 		Uint64  uint64  `usage:"::uint64 field"`
+		ignored string  `usage:"unexported field"`
 	}
 	External struct {
 		Duration time.Duration `usage:"::duration field"`
@@ -136,15 +138,24 @@ const usageFlagsExpected = "Usage of command line arguments:\n" +
 	"    \t::uint64 field\n"
 
 const usageEnvsExpected = "Usage of environment variables:\n" +
-	"  TEST_EXTERNAL_DURATION\t\t::duration field\n" +
-	"  TEST_ID\t\tIdentificator\n" +
-	"  TEST_SIMPLE_BOOL\t\t::bool field\n" +
-	"  TEST_SIMPLE_FLOAT64\t\t::float64 field\n" +
-	"  TEST_SIMPLE_INT\t\t::int field\n" +
-	"  TEST_SIMPLE_INT64\t\t::int64 field\n" +
-	"  TEST_SIMPLE_STR\t\t::str field\n" +
-	"  TEST_SIMPLE_UINT\t\t::uint field\n" +
-	"  TEST_SIMPLE_UINT64\t\t::uint64 field\n"
+	"   TEST_EXTERNAL_DURATION duration\n" +
+	"    \t::duration field\n" +
+	"   TEST_ID string\n" +
+	"    \tIdentificator\n" +
+	"   TEST_SIMPLE_BOOL\n" +
+	"    \t::bool field\n" +
+	"   TEST_SIMPLE_FLOAT64 float\n" +
+	"    \t::float64 field\n" +
+	"   TEST_SIMPLE_INT int\n" +
+	"    \t::int field\n" +
+	"   TEST_SIMPLE_INT64 int\n" +
+	"    \t::int64 field\n" +
+	"   TEST_SIMPLE_STR string\n" +
+	"    \t::str field\n" +
+	"   TEST_SIMPLE_UINT uint\n" +
+	"    \t::uint field\n" +
+	"   TEST_SIMPLE_UINT64 uint\n" +
+	"    \t::uint64 field\n"
 
 /////////////////////////////////////////////////////////
 // Tests implementations
@@ -259,15 +270,17 @@ func TestConfigChain(t *testing.T) {
 }
 
 func TestConfigErrors(t *testing.T) {
+	t.Run("Test BadStruct usage", func(t *testing.T) {
+		err1 := config.New[BadConfig](nil).UsageFlags(nil)
+		require.Error(t, err1)
+		err2 := config.New[BadConfig](nil).UsageEnvs("test", nil)
+		require.Error(t, err2)
+	})
 	t.Run("Test BadStructs", func(t *testing.T) {
 		_, err1 := config.New[BadConfig](nil).WithFlags([]string{"test"}, nil).AsStruct()
 		require.Error(t, err1)
 		_, err2 := config.New[RecurrentConfig](nil).WithFlags([]string{"test"}, nil).AsStruct()
 		require.Error(t, err2)
-
-		var buf bytes.Buffer
-		config.New[BadConfig](nil).UsageFlags(&buf)
-		require.Equal(t, "", buf.String())
 	})
 	t.Run("Test withFile", func(t *testing.T) {
 		_, err := config.New[MyConfig](nil).WithFile("nonexist",
