@@ -188,10 +188,12 @@ func enumerateValue(v reflect.Value, prefix string, typesStack map[reflect.Type]
 		case reflect.Float64:
 			ptr := field.Addr().Interface().(*float64)
 			fs.Float64Var(ptr, name, *ptr, tagUsage)
-		case reflect.Struct, reflect.Ptr, reflect.Interface:
+		case reflect.Struct, reflect.Ptr:
 			if err := enumerateValue(field, name, typesStack, fs); err != nil {
 				return err
 			}
+		default:
+			return fmt.Errorf("enum: field %s, has unsupported type %v", name, field.Kind())
 		}
 	}
 

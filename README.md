@@ -233,7 +233,7 @@ So, command line: `./app --config=sample.yaml -- --host-addr=127.0.0.1 --host-po
 fname := flag.String("config", "config.yaml", "Configuration file")
 flag.Parse()
 
-cfg, err := config.New(nil).WithFile(*fname,
+cfg, err := config.New[Config](nil).WithFile(*fname,
 	func(cfg *Config, content []byte) error {
 		return yaml.Unmarshal(content, cfg)
 	},

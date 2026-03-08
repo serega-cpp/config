@@ -72,6 +72,9 @@ type BadConfig struct {
 type RecurrentConfig struct {
 	Self *RecurrentConfig
 }
+type InvalidConfig struct {
+	Iface interface{}
+}
 
 ///////////////////////////////////////////////////////////
 // Sample config content
@@ -281,6 +284,8 @@ func TestConfigErrors(t *testing.T) {
 		require.Error(t, err1)
 		_, err2 := config.New[RecurrentConfig](nil).WithFlags([]string{"test"}, nil).AsStruct()
 		require.Error(t, err2)
+		_, err3 := config.New[InvalidConfig](nil).WithFlags([]string{"test"}, nil).AsStruct()
+		require.Error(t, err3)
 	})
 	t.Run("Test withFile", func(t *testing.T) {
 		_, err := config.New[MyConfig](nil).WithFile("nonexist",
