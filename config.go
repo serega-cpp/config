@@ -39,6 +39,9 @@ func (c *Config[ConfigType]) UsageFlags(out io.Writer) error {
 }
 
 func (c *Config[ConfigType]) UsageEnvs(prefix string, out io.Writer) error {
+	if out == nil {
+		out = os.Stderr
+	}
 	fs := flag.NewFlagSet(SourceEnvVars, flag.ContinueOnError)
 	if err := buildFlagsForStruct(&c.cfg, fs); err != nil {
 		return err

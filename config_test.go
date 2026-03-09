@@ -207,16 +207,25 @@ func TestConfigFlags(t *testing.T) {
 
 func TestConfigUsageEnvs(t *testing.T) {
 	t.Run("Usage envs (classic)", func(t *testing.T) {
+		err := config.New[MyConfig](nil).UsageEnvs("test", nil)
+		require.NoError(t, err)
+
 		var buf bytes.Buffer
 		config.New[MyConfig](nil).UsageEnvs("test", &buf)
 		require.Equal(t, usageEnvsExpected, buf.String())
 	})
 	t.Run("Usage envs (pointers)", func(t *testing.T) {
+		err := config.New[MyConfigPtr](nil).UsageEnvs("test", nil)
+		require.NoError(t, err)
+
 		var buf bytes.Buffer
 		config.New[MyConfigPtr](nil).UsageEnvs("test", &buf)
 		require.Equal(t, usageEnvsExpected, buf.String())
 	})
 	t.Run("Usage envs (embedded)", func(t *testing.T) {
+		err := config.New[MyConfigEmbed](nil).UsageEnvs("test", nil)
+		require.NoError(t, err)
+
 		var buf bytes.Buffer
 		config.New[MyConfigEmbed](nil).UsageEnvs("test", &buf)
 		require.Equal(t, usageEnvsExpected, buf.String())
