@@ -71,7 +71,7 @@ func (c *Config[ConfigType]) WithFile(
 	return c
 }
 
-func (c *Config[ConfigType]) WithFlags(args []string, out io.Writer) *Config[ConfigType] {
+func (c *Config[ConfigType]) WithFlags(args []string) *Config[ConfigType] {
 	if c.err != nil || len(args) == 0 {
 		return c
 	}
@@ -79,9 +79,9 @@ func (c *Config[ConfigType]) WithFlags(args []string, out io.Writer) *Config[Con
 	if c.err = buildFlagsForStruct(&c.cfg, fs); c.err != nil {
 		return c
 	}
-	fs.SetOutput(out)
+	fs.SetOutput(io.Discard) // avoid usage print
 	if err := fs.Parse(args); err != nil {
-		c.err = fmt.Errorf("failed to parse arguments: %v", err)
+		c.err = fmt.Errorf("faFiled to parse arguments: %v", err)
 	}
 	return c
 }

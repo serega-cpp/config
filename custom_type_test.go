@@ -143,7 +143,7 @@ func TestConfigUsageCustomFlags(t *testing.T) {
 
 func TestConfigCustomFlags(t *testing.T) {
 	t.Run("Flags custom", func(t *testing.T) {
-		cfg, err := config.New[CustomConfig](nil).WithFlags(argsCustom, nil).AsStruct()
+		cfg, err := config.New[CustomConfig](nil).WithFlags(argsCustom).AsStruct()
 		require.NoError(t, err)
 		require.Equal(t, idCustomExpected, cfg.Id)
 		require.Equal(t, customExpected, cfg.Custom)
@@ -170,7 +170,7 @@ func TestConfigCustomEnvs(t *testing.T) {
 
 func TestConfigBadCustomFlags(t *testing.T) {
 	t.Run("Bad custom flags", func(t *testing.T) {
-		_, err := config.New[CustomConfig](nil).WithFlags(badArgsCustom, nil).AsStruct()
+		_, err := config.New[CustomConfig](nil).WithFlags(badArgsCustom).AsStruct()
 		require.Error(t, err)
 	})
 }

@@ -109,9 +109,9 @@ cfgObj.WithFile(fileName,
 
 3. Load values from command line [optional]
 ```
-// the 2-nd argument is an output stream for printing flag
-// usage errors (if nil is provided, the stderr will be used)
-cfgObj.WithFlags(os.Args[1:], nil)
+// The argument is a slice with command line parameters,
+// without program name (excluding the first item)
+cfgObj.WithFlags(os.Args[1:])
 ```
 
 4. Load values from environment variables [optional]
@@ -162,7 +162,7 @@ func main() {
 		func(cfg *Config, content []byte) error {
 			return yaml.Unmarshal(content, cfg)
 		},
-	).WithFlags(os.Args[1:], nil).WithEnvs("prefix").AsStruct()
+	).WithFlags(os.Args[1:]).WithEnvs("prefix").AsStruct()
 
 	if err != nil {
 		fmt.Println(err)
@@ -225,7 +225,7 @@ Usage of environment variables:
 
 **Sample #4:** Read config file name from command line.
 
-Sometimes it's convenient to read the configuration file name from the command line. However, using such an option by the application will conflict with the main configuration loaded by the package. There is a solution: use the "--" separator which signals the end of options and disables further option processing. The remaining options for the main configuration are passed explicitly to the package.
+Sometimes it's convenient to read the configuration file name from the command line. However, using such an option by the application will conflict with the main configuration loaded by the package. There is a solution: the "--" separator which correctly divides the groups of options (please note the usage of `flag.Args()` instead of `os.Args[1:]`).
 
 So, command line: `./app --config=sample.yaml -- --host-addr=127.0.0.1 --host-port=80 ...`
 
@@ -237,7 +237,7 @@ cfg, err := config.New[Config](nil).WithFile(*fname,
 	func(cfg *Config, content []byte) error {
 		return yaml.Unmarshal(content, cfg)
 	},
-).WithFlags(flag.Args(), nil).AsStruct()
+).WithFlags(flag.Args()).AsStruct()
 ```
 
 Examples can also be found in [config_test.go](config_test.go).

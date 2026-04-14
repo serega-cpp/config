@@ -183,21 +183,21 @@ func TestConfigUsageFlags(t *testing.T) {
 
 func TestConfigFlags(t *testing.T) {
 	t.Run("Flags (classic)", func(t *testing.T) {
-		cfg, err := config.New[MyConfig](nil).WithFlags(argsSample, nil).AsStruct()
+		cfg, err := config.New[MyConfig](nil).WithFlags(argsSample).AsStruct()
 		require.NoError(t, err)
 		require.Equal(t, idExpected, cfg.Id)
 		require.Equal(t, simpleExpected, cfg.Simple)
 		require.Equal(t, externalExpected, cfg.External)
 	})
 	t.Run("Flags (pointers)", func(t *testing.T) {
-		cfg, err := config.New[MyConfigPtr](nil).WithFlags(argsSample, nil).AsStruct()
+		cfg, err := config.New[MyConfigPtr](nil).WithFlags(argsSample).AsStruct()
 		require.NoError(t, err)
 		require.Equal(t, idExpected, cfg.Id)
 		require.Equal(t, &simpleExpected, cfg.Simple)
 		require.Equal(t, &externalExpected, cfg.External)
 	})
 	t.Run("Flags (embedded)", func(t *testing.T) {
-		cfg, err := config.New[MyConfigEmbed](nil).WithFlags(argsSample, nil).AsStruct()
+		cfg, err := config.New[MyConfigEmbed](nil).WithFlags(argsSample).AsStruct()
 		require.NoError(t, err)
 		require.Equal(t, idExpected, cfg.Id)
 		require.Equal(t, simpleExpected, Simple(cfg.Simple))
@@ -273,7 +273,7 @@ func TestConfigChain(t *testing.T) {
 				Int:     1,
 				Float64: 1.0,
 			},
-		}).WithFlags(args, nil).WithEnvs("chain").AsStruct()
+		}).WithFlags(args).WithEnvs("chain").AsStruct()
 		require.NoError(t, err)
 		require.Equal(t, "1", cfg.Simple.Str)
 		require.Equal(t, 2, cfg.Simple.Int)
@@ -289,11 +289,11 @@ func TestConfigErrors(t *testing.T) {
 		require.Error(t, err2)
 	})
 	t.Run("Test BadStructs", func(t *testing.T) {
-		_, err1 := config.New[BadConfig](nil).WithFlags([]string{"test"}, nil).AsStruct()
+		_, err1 := config.New[BadConfig](nil).WithFlags([]string{"test"}).AsStruct()
 		require.Error(t, err1)
-		_, err2 := config.New[RecurrentConfig](nil).WithFlags([]string{"test"}, nil).AsStruct()
+		_, err2 := config.New[RecurrentConfig](nil).WithFlags([]string{"test"}).AsStruct()
 		require.Error(t, err2)
-		_, err3 := config.New[InvalidConfig](nil).WithFlags([]string{"test"}, nil).AsStruct()
+		_, err3 := config.New[InvalidConfig](nil).WithFlags([]string{"test"}).AsStruct()
 		require.Error(t, err3)
 	})
 	t.Run("Test withFile", func(t *testing.T) {
@@ -306,7 +306,7 @@ func TestConfigErrors(t *testing.T) {
 				require.Fail(t, "reads file after failure")
 				return nil
 			},
-		).WithFlags(argsSample, nil).WithEnvs("test").AsStruct()
+		).WithFlags(argsSample).WithEnvs("test").AsStruct()
 		require.Error(t, err)
 	})
 }
