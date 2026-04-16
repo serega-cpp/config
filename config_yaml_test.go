@@ -43,8 +43,8 @@ func (u *Url) UnmarshalYAML(value *yaml.Node) error {
 // Config struct declaration
 
 type Specific struct {
-	Time  time.Time      `usage:"::time field"`
-	Slice []string       `usage:"::slice field"`
+	Time  time.Time      `yaml:"start_time" usage:"::time field"`
+	Slice []string       `yaml:"count_down" usage:"::slice field"`
 	Map   map[string]int `usage:"::map field"`
 }
 
@@ -64,8 +64,8 @@ const YamlContent = "id: custom_yaml\n" +
 	"  shorttime: 2025-12-21\n" +
 	"  link: https://google.com/search?q=golang\n" +
 	"specific:\n" +
-	"  time: 2020-03-23T11:15:00Z\n" +
-	"  slice:\n" +
+	"  start_time: 2020-03-23T11:15:00Z\n" +
+	"  count_down:\n" +
 	"    - one\n" +
 	"    - two\n" +
 	"    - six\n" +

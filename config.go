@@ -81,7 +81,7 @@ func (c *Config[ConfigType]) WithFlags(args []string) *Config[ConfigType] {
 	}
 	fs.SetOutput(io.Discard) // avoid usage print
 	if err := fs.Parse(args); err != nil {
-		c.err = fmt.Errorf("faFiled to parse arguments: %v", err)
+		c.err = fmt.Errorf("failed to parse arguments: %v", err)
 	}
 	return c
 }

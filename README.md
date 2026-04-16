@@ -10,11 +10,11 @@ This package is designed to unify work with service configuration. It provides a
 ### Parameter sources
 
 The following sources are supported:
-- files (Yaml, Ini, Toml, etc.)
+- files (via external packages: Yaml, Ini, Toml, etc.)
 - command line parameters
 - environment variables
 
-Loading from a file is not directly the responsibility of this package; it merely provides the ability to implement a callback function in client code. Loading from command line parameters and environment variables, as well as source chaining, is implemented in the package.
+Loading from a file is not directly the responsibility of this package; it merely provides the ability to implement a callback function in client code. Loading from command line parameters and environment variables, as well as config sources chaining, is implemented in the package.
 
 ### Supported parameter types
 
@@ -26,7 +26,7 @@ The list of Go types supported by file parsers depends on the specific parser im
 - float64
 - time.Duration
 
-It is also supported to add custom types by initializing them with a string.
+It is also supported to add custom types by initializing them from a string.
 
 ### Custom types
 
@@ -36,7 +36,7 @@ To use a custom type with file parsers, follow the appropriate instructions for 
 
 ### Parameter names
 
-Parameter names are automatically generated based on the structure field names. This is the package's key feature. For command line parameters, field names are first converted to lowercase and separated by hyphens. For environment variables, they are capitalized and separated by underscores. E.g.:
+Parameter names are automatically generated based on the structure field names. This is the package's key feature. For command line parameters, field names are first converted to lowercase and separated by hyphens. For environment variables, they are prefixed by the prefix, capitalized and separated by underscores. E.g.:
 
 ```
 type Host struct {
@@ -70,7 +70,7 @@ PREFIX_HOST_PORT
 PREFIX_MEASUREMENT_DURATION
 ```
 
-In file parsers, parameter names are defined by the parser implementation itself. Additionally, they typically support tags for customizing names. This package does not support a tag for customizing names. It only supports the `usage` tag for describing values.
+In file parsers, parameter names are defined by the parser implementation itself. Additionally, they typically support tags for customizing names, which can be freely used here. This package does not support a tag for customizing names. It only supports the `usage` tag for describing values.
 
 ### Limitations
 
@@ -225,7 +225,7 @@ Usage of environment variables:
 
 **Sample #4:** Read config file name from command line.
 
-Sometimes it's convenient to read the configuration file name from the command line. However, using such an option by the application will conflict with the main configuration loaded by the package. There is a solution: the "--" separator which correctly divides the groups of options (please note the usage of `flag.Args()` instead of `os.Args[1:]`).
+Sometimes it's convenient to read the configuration file name from the command line. However, using such an option by the application will conflict with the main configuration loaded by the package. There is a solution: the "--" separator which correctly divides the groups of options (please note the usage of `flag.Args()` instead of `os.Args[1:]` for parsing next groups).
 
 So, command line: `./app --config=sample.yaml -- --host-addr=127.0.0.1 --host-port=80 ...`
 
