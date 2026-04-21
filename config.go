@@ -13,6 +13,7 @@ import (
 
 const SourceCommandLine = "command line arguments"
 const SourceEnvVars = "environment variables"
+const CustomTagName = "param"
 
 type Config[ConfigType any] struct {
 	cfg ConfigType
@@ -154,43 +155,43 @@ func enumerateValue(v reflect.Value, prefix string, typesStack map[reflect.Type]
 		}
 
 		name := buildName(prefix, structField.Name)
-		tagUsage := structField.Tag.Get("usage")
+		tag := parseCustomTag(structField.Tag.Get(CustomTagName))
 
 		// Special handling for complex types
 		if field.Type() == reflect.TypeOf(time.Duration(0)) {
 			ptr := field.Addr().Interface().(*time.Duration)
-			fs.DurationVar(ptr, name, *ptr, tagUsage)
+			fs.DurationVar(ptr, name, *ptr, tag.Usage)
 			continue
 		}
 		if field.Type().Implements(flagValueType) ||
 			reflect.PointerTo(field.Type()).Implements(flagValueType) {
 			ptr := field.Addr().Interface().(flag.Value)
-			fs.Var(ptr, name, tagUsage)
+			fs.Var(ptr, name, tag.Usage)
 			continue
 		}
 
 		switch field.Kind() {
 		case reflect.String:
 			ptr := field.Addr().Interface().(*string)
-			fs.StringVar(ptr, name, *ptr, tagUsage)
+			fs.StringVar(ptr, name, *ptr, tag.Usage)
 		case reflect.Int:
 			ptr := field.Addr().Interface().(*int)
-			fs.IntVar(ptr, name, *ptr, tagUsage)
+			fs.IntVar(ptr, name, *ptr, tag.Usage)
 		case reflect.Int64:
 			ptr := field.Addr().Interface().(*int64)
-			fs.Int64Var(ptr, name, *ptr, tagUsage)
+			fs.Int64Var(ptr, name, *ptr, tag.Usage)
 		case reflect.Uint:
 			ptr := field.Addr().Interface().(*uint)
-			fs.UintVar(ptr, name, *ptr, tagUsage)
+			fs.UintVar(ptr, name, *ptr, tag.Usage)
 		case reflect.Uint64:
 			ptr := field.Addr().Interface().(*uint64)
-			fs.Uint64Var(ptr, name, *ptr, tagUsage)
+			fs.Uint64Var(ptr, name, *ptr, tag.Usage)
 		case reflect.Bool:
 			ptr := field.Addr().Interface().(*bool)
-			fs.BoolVar(ptr, name, *ptr, tagUsage)
+			fs.BoolVar(ptr, name, *ptr, tag.Usage)
 		case reflect.Float64:
 			ptr := field.Addr().Interface().(*float64)
-			fs.Float64Var(ptr, name, *ptr, tagUsage)
+			fs.Float64Var(ptr, name, *ptr, tag.Usage)
 		case reflect.Struct, reflect.Ptr:
 			if err := enumerateValue(field, name, typesStack, fs); err != nil {
 				return err
@@ -213,6 +214,16 @@ func buildName(prefix string, name string) string {
 func buildEnvName(prefix string, name string) string {
 	s := prefix + "_" + strings.ReplaceAll(name, "-", "_")
 	return strings.ToUpper(s)
+}
+
+type customTag struct {
+	Usage string
+}
+
+func parseCustomTag(tag string) customTag {
+	return customTag{
+		Usage: tag,
+	}
 }
 
 type prefixCleanerWriter struct {

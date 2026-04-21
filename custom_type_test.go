@@ -57,14 +57,14 @@ func (u *Url) Set(s string) error {
 // Config struct declaration
 
 type Custom struct {
-	StdTime   Time `usage:"::time20 field"`
-	LongTime  Time `usage:"::time19 field"`
-	ShortTime Time `usage:"::time10 field"`
-	Link      Url  `usage:"::Link field"`
+	StdTime   Time `param:"::time20 field"`
+	LongTime  Time `param:"::time19 field"`
+	ShortTime Time `param:"::time10 field"`
+	Link      Url  `param:"::Link field"`
 }
 
 type CustomConfig struct {
-	Id     string `usage:"Identificator"`
+	Id     string `param:"Identificator"`
 	Custom Custom
 }
 

@@ -20,48 +20,48 @@ import (
 // The test includes all supported datatypes.
 
 type Simple struct {
-	Str     string  `usage:"::str field"`
-	Int     int     `usage:"::int field"`
-	Uint    uint    `usage:"::uint field"`
-	Bool    bool    `usage:"::bool field"`
-	Float64 float64 `usage:"::float64 field"`
-	Int64   int64   `usage:"::int64 field"`
-	Uint64  uint64  `usage:"::uint64 field"`
-	ignored string  `usage:"unexported field"`
+	Str     string  `param:"::str field"`
+	Int     int     `param:"::int field"`
+	Uint    uint    `param:"::uint field"`
+	Bool    bool    `param:"::bool field"`
+	Float64 float64 `param:"::float64 field"`
+	Int64   int64   `param:"::int64 field"`
+	Uint64  uint64  `param:"::uint64 field"`
+	ignored string  `param:"unexported field"`
 }
 type External struct {
-	Duration time.Duration `usage:"::duration field"`
+	Duration time.Duration `param:"::duration field"`
 }
 
 // Classic config with values
 type MyConfig struct {
-	Id       string `usage:"Identificator"`
+	Id       string `param:"Identificator"`
 	Simple   Simple
 	External External
 }
 
 // Config with pointers
 type MyConfigPtr struct {
-	Id       string `usage:"Identificator"`
+	Id       string `param:"Identificator"`
 	Simple   *Simple
 	External *External
 }
 
 // Config with anonymous embedded sub-structs
 type MyConfigEmbed struct {
-	Id     string `usage:"Identificator"`
+	Id     string `param:"Identificator"`
 	Simple struct {
-		Str     string  `usage:"::str field"`
-		Int     int     `usage:"::int field"`
-		Uint    uint    `usage:"::uint field"`
-		Bool    bool    `usage:"::bool field"`
-		Float64 float64 `usage:"::float64 field"`
-		Int64   int64   `usage:"::int64 field"`
-		Uint64  uint64  `usage:"::uint64 field"`
-		ignored string  `usage:"unexported field"`
+		Str     string  `param:"::str field"`
+		Int     int     `param:"::int field"`
+		Uint    uint    `param:"::uint field"`
+		Bool    bool    `param:"::bool field"`
+		Float64 float64 `param:"::float64 field"`
+		Int64   int64   `param:"::int64 field"`
+		Uint64  uint64  `param:"::uint64 field"`
+		ignored string  `param:"unexported field"`
 	}
 	External struct {
-		Duration time.Duration `usage:"::duration field"`
+		Duration time.Duration `param:"::duration field"`
 	}
 }
 

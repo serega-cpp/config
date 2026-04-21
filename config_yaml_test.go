@@ -43,13 +43,13 @@ func (u *Url) UnmarshalYAML(value *yaml.Node) error {
 // Config struct declaration
 
 type Specific struct {
-	Time  time.Time      `yaml:"start_time" usage:"::time field"`
-	Slice []string       `yaml:"count_down" usage:"::slice field"`
-	Map   map[string]int `usage:"::map field"`
+	Time  time.Time      `yaml:"start_time" param:"::time field"`
+	Slice []string       `yaml:"count_down" param:"::slice field"`
+	Map   map[string]int `param:"::map field"`
 }
 
 type YamlConfig struct {
-	Id       string `usage:"Identificator"`
+	Id       string `param:"Identificator"`
 	Custom   Custom
 	Specific Specific
 }

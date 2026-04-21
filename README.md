@@ -40,12 +40,12 @@ Parameter names are automatically generated based on the structure field names. 
 
 ```
 type Host struct {
-	Addr string `usage:"Service IP listen on"`
-	Port int    `usage:"Service port listen on"`
+	Addr string `param:"Service IP listen on"`
+	Port int    `param:"Service port listen on"`
 }
 
 type Measurement struct {
-	Duration time.Duration `usage:"Duration of experiment"`
+	Duration time.Duration `param:"Duration of experiment"`
 }
 
 type Config struct {
@@ -70,7 +70,7 @@ PREFIX_HOST_PORT
 PREFIX_MEASUREMENT_DURATION
 ```
 
-In file parsers, parameter names are defined by the parser implementation itself. Additionally, they typically support tags for customizing names, which can be freely used here. This package does not support a tag for customizing names. It only supports the `usage` tag for describing values.
+In file parsers, parameter names are defined by the parser implementation itself. Additionally, they typically support tags for customizing names, which can be freely used here. This package does not support a tag for customizing names. It only supports the `param` tag for describing values.
 
 ### Limitations
 
