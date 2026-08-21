@@ -1,5 +1,5 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/serega-cpp/config.svg)](https://pkg.go.dev/github.com/serega-cpp/config)
-[![Go Report Card](https://goreportcard.com/badge/github.com/serega-cpp/config)](https://goreportcard.com/report/github.com/serega-cpp/config)
+[![Lint](https://github.com/serega-cpp/config/workflows/Lint/badge.svg)](https://github.com/serega-cpp/config/actions/workflows/lint.yaml)
 [![Go Build](https://github.com/serega-cpp/config/actions/workflows/build.yaml/badge.svg)](https://github.com/serega-cpp/config/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/gh/serega-cpp/config/branch/master/graph/badge.svg)](https://codecov.io/gh/serega-cpp/config)
 
@@ -74,14 +74,14 @@ In file parsers, parameter names are defined by the parser implementation itself
 
 ### Limitations
 
-1. The pointers to data fields not supported, e.g.:
+1. The pointers to data fields are not supported, e.g.:
 ```
 type BadConfig struct {
 	Id *string
 }
 ```
 
-2. Recurrent types not supported, e.g.:
+2. Recurrent types are not supported, e.g.:
 ```
 type BadConfig struct {
 	Self *BadConfig
@@ -90,7 +90,7 @@ type BadConfig struct {
 
 ### Usage:
 
-1. Create a configuration file, specifying initial values ​​if necessary
+1. Create a configuration object, specifying initial values if necessary
 ```
 // if nil is provided as an initial struct, no defaults will be used
 cfgObj := config.New(&Config{
@@ -139,7 +139,7 @@ cfgObj.UsageEnvs("prefix", nil)
 
 ### Samples
 
-**Sample #1:** Gets some defaults, then loads Yaml file, then parses command line and environment variables
+**Sample #1:** Get some defaults, then load Yaml file, then parse command line and environment variables
 
 ```
 package main
@@ -150,7 +150,7 @@ import (
 )
 
 func main() {
-	// This loads parameters in the order overwriting existing values:
+	// This load parameters in the order overwriting existing values:
 	// defaults -> yaml file -> command line -> env vars
 	// (calls may be freely reordered)
 
@@ -173,7 +173,7 @@ func main() {
 }
 ```
 
-**Sample #2:** Loads Ini-file content (using gopkg.in/ini.v1).
+**Sample #2:** Load Ini-file content (using gopkg.in/ini.v1)
 
 ```
 cfg, err := config.New[Config](nil).WithFile(fname,
@@ -187,7 +187,7 @@ cfg, err := config.New[Config](nil).WithFile(fname,
 ).AsStruct()
 ```
 
-**Sample #3:** Usage output.
+**Sample #3:** Usage output
 
 ```
 config.New[Config](nil).UsageFlags(nil)
@@ -223,7 +223,7 @@ Usage of environment variables:
     	Duration of experiment
 ```
 
-**Sample #4:** Read config file name from command line.
+**Sample #4:** Read config file name from command line
 
 Sometimes it's convenient to read the configuration file name from the command line. However, using such an option by the application will conflict with the main configuration loaded by the package. There is a solution: the "--" separator which correctly divides the groups of options (please note the usage of `flag.Args()` instead of `os.Args[1:]` for parsing next groups).
 
