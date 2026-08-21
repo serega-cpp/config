@@ -136,7 +136,7 @@ const usageEnvsCustomExpected = "Usage of environment variables:\n" +
 func TestConfigUsageCustomFlags(t *testing.T) {
 	t.Run("Usage custom flags", func(t *testing.T) {
 		var buf bytes.Buffer
-		config.New[CustomConfig](nil).UsageFlags(&buf)
+		require.NoError(t, config.New[CustomConfig](nil).UsageFlags(&buf))
 		require.Equal(t, usageFlagsCustomExpected, buf.String())
 	})
 }
@@ -153,7 +153,7 @@ func TestConfigCustomFlags(t *testing.T) {
 func TestConfigUsageCustomEnvs(t *testing.T) {
 	t.Run("Usage custom envs", func(t *testing.T) {
 		var buf bytes.Buffer
-		config.New[CustomConfig](nil).UsageEnvs("test", &buf)
+		require.NoError(t, config.New[CustomConfig](nil).UsageEnvs("test", &buf))
 		require.Equal(t, usageEnvsCustomExpected, buf.String())
 	})
 }

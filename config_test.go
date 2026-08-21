@@ -166,17 +166,17 @@ const usageEnvsExpected = "Usage of environment variables:\n" +
 func TestConfigUsageFlags(t *testing.T) {
 	t.Run("Usage flags (classic)", func(t *testing.T) {
 		var buf bytes.Buffer
-		config.New[MyConfig](nil).UsageFlags(&buf)
+		require.NoError(t, config.New[MyConfig](nil).UsageFlags(&buf))
 		require.Equal(t, usageFlagsExpected, buf.String())
 	})
 	t.Run("Usage flags (pointers)", func(t *testing.T) {
 		var buf bytes.Buffer
-		config.New[MyConfigPtr](nil).UsageFlags(&buf)
+		require.NoError(t, config.New[MyConfigPtr](nil).UsageFlags(&buf))
 		require.Equal(t, usageFlagsExpected, buf.String())
 	})
 	t.Run("Usage flags (embedded)", func(t *testing.T) {
 		var buf bytes.Buffer
-		config.New[MyConfigEmbed](nil).UsageFlags(&buf)
+		require.NoError(t, config.New[MyConfigEmbed](nil).UsageFlags(&buf))
 		require.Equal(t, usageFlagsExpected, buf.String())
 	})
 }
@@ -211,7 +211,7 @@ func TestConfigUsageEnvs(t *testing.T) {
 		require.NoError(t, err)
 
 		var buf bytes.Buffer
-		config.New[MyConfig](nil).UsageEnvs("test", &buf)
+		require.NoError(t, config.New[MyConfig](nil).UsageEnvs("test", &buf))
 		require.Equal(t, usageEnvsExpected, buf.String())
 	})
 	t.Run("Usage envs (pointers)", func(t *testing.T) {
@@ -219,7 +219,7 @@ func TestConfigUsageEnvs(t *testing.T) {
 		require.NoError(t, err)
 
 		var buf bytes.Buffer
-		config.New[MyConfigPtr](nil).UsageEnvs("test", &buf)
+		require.NoError(t, config.New[MyConfigPtr](nil).UsageEnvs("test", &buf))
 		require.Equal(t, usageEnvsExpected, buf.String())
 	})
 	t.Run("Usage envs (embedded)", func(t *testing.T) {
@@ -227,7 +227,7 @@ func TestConfigUsageEnvs(t *testing.T) {
 		require.NoError(t, err)
 
 		var buf bytes.Buffer
-		config.New[MyConfigEmbed](nil).UsageEnvs("test", &buf)
+		require.NoError(t, config.New[MyConfigEmbed](nil).UsageEnvs("test", &buf))
 		require.Equal(t, usageEnvsExpected, buf.String())
 	})
 }
@@ -320,6 +320,8 @@ func createEnvironment(t *testing.T, envs []string) {
 		if pos == -1 {
 			t.Fatalf("failed to parse env var: %s", env)
 		}
-		os.Setenv(env[:pos], env[pos+1:])
+		if err := os.Setenv(env[:pos], env[pos+1:]); err != nil {
+			t.Fatalf("failed to set env var: %s=%s", env[:pos], env[pos+1:])
+		}
 	}
 }
